@@ -44,7 +44,7 @@ const HeroBanner: React.FC = () => {
       style={{
         position: 'relative',
         width: '800px',
-        height: '300px',
+        height: '300px', // Reverted to original height for consistency with design
         overflow: 'hidden',
         margin: '0 auto',
       }}
