@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const images = [
-  'https://placekitten.com/800/300',
-  'https://placekitten.com/801/300',
-  'https://placekitten.com/802/300'
+  'https://placecats.com/800/300',
+  'https://placecats.com/801/300',
+  'https://placecats.com/802/300'
 ];
 
 function HeroBanner() {
