@@ -65,9 +65,10 @@ describe('HeroBanner', () => {
   test('pauses auto-rotation on hover', () => {
     render(<HeroBanner />);
     const banner = screen.getByRole('img').parentElement;
+    if (!banner) throw new Error('Banner element not found in DOM structure');
     const initialImage = screen.getByRole('img').getAttribute('src');
 
-    fireEvent.mouseEnter(banner!);
+    fireEvent.mouseEnter(banner);
 
     act(() => {
       jest.advanceTimersByTime(5000);
@@ -80,10 +81,11 @@ describe('HeroBanner', () => {
   test('resumes auto-rotation after hover ends', () => {
     render(<HeroBanner />);
     const banner = screen.getByRole('img').parentElement;
+    if (!banner) throw new Error('Banner element not found in DOM structure');
     const initialImage = screen.getByRole('img').getAttribute('src');
 
-    fireEvent.mouseEnter(banner!);
-    fireEvent.mouseLeave(banner!);
+    fireEvent.mouseEnter(banner);
+    fireEvent.mouseLeave(banner);
 
     act(() => {
       jest.advanceTimersByTime(5000);
