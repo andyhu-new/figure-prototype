@@ -1,24 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const images = [
+const images: string[] = [
   'https://placecats.com/800/300',
   'https://placecats.com/801/300',
-  'https://placecats.com/802/300'
+  'https://placecats.com/802/300',
 ];
 
-function HeroBanner() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const intervalRef = useRef(null);
+const HeroBanner: React.FC = () => {
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const delay = 5000; // 5 seconds
 
-  const nextSlide = () => {
-    setCurrentIndex((prevIndex) =>
+  const nextSlide = (): void => {
+    setCurrentIndex((prevIndex: number): number =>
       prevIndex === images.length - 1 ? 0 : prevIndex + 1
     );
   };
 
-  const prevSlide = () => {
-    setCurrentIndex((prevIndex) =>
+  const prevSlide = (): void => {
+    setCurrentIndex((prevIndex: number): number =>
       prevIndex === 0 ? images.length - 1 : prevIndex - 1
     );
   };
@@ -26,15 +26,17 @@ function HeroBanner() {
   useEffect(() => {
     // Auto-rotate
     startAutoRotate();
-    return pauseAutoRotate; 
+    return pauseAutoRotate;
   }, []);
 
-  const startAutoRotate = () => {
+  const startAutoRotate = (): void => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(nextSlide, delay);
   };
 
-  const pauseAutoRotate = () => {
-    clearInterval(intervalRef.current);
+  const pauseAutoRotate = (): void => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = null;
   };
 
   return (
@@ -44,10 +46,10 @@ function HeroBanner() {
         width: '800px',
         height: '300px',
         overflow: 'hidden',
-        margin: '0 auto'
+        margin: '0 auto',
       }}
-      onMouseEnter={pauseAutoRotate}
-      onMouseLeave={startAutoRotate}
+      onMouseEnter={(): void => pauseAutoRotate()}
+      onMouseLeave={(): void => startAutoRotate()}
     >
       <img
         src={images[currentIndex]}
@@ -55,29 +57,29 @@ function HeroBanner() {
         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
       />
       <button
-        onClick={prevSlide}
+        onClick={(): void => prevSlide()}
         style={{
           position: 'absolute',
           top: '50%',
           left: '10px',
-          transform: 'translateY(-50%)'
+          transform: 'translateY(-50%)',
         }}
       >
         ‹
       </button>
       <button
-        onClick={nextSlide}
+        onClick={(): void => nextSlide()}
         style={{
           position: 'absolute',
           top: '50%',
           right: '10px',
-          transform: 'translateY(-50%)'
+          transform: 'translateY(-50%)',
         }}
       >
         ›
       </button>
     </div>
   );
-}
+};
 
 export default HeroBanner;
