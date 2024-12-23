@@ -22,16 +22,19 @@ describe('HeroBanner', () => {
     render(<HeroBanner />);
     const image = screen.getByRole('img');
     expect(image).toBeInTheDocument();
-    expect(image).toHaveAttribute('src', expect.stringContaining('placecats.com'));
+    expect(image).toHaveAttribute(
+      'src',
+      expect.stringContaining('placecats.com')
+    );
   });
 
   test('changes image when clicking next button', () => {
     render(<HeroBanner />);
     const initialImage = screen.getByRole('img').getAttribute('src');
     const nextButton = screen.getByRole('button', { name: '›' });
-    
+
     fireEvent.click(nextButton);
-    
+
     const newImage = screen.getByRole('img').getAttribute('src');
     expect(newImage).not.toBe(initialImage);
   });
@@ -40,9 +43,9 @@ describe('HeroBanner', () => {
     render(<HeroBanner />);
     const initialImage = screen.getByRole('img').getAttribute('src');
     const prevButton = screen.getByRole('button', { name: '‹' });
-    
+
     fireEvent.click(prevButton);
-    
+
     const newImage = screen.getByRole('img').getAttribute('src');
     expect(newImage).not.toBe(initialImage);
   });
@@ -50,11 +53,11 @@ describe('HeroBanner', () => {
   test('auto-rotates images every 5 seconds', () => {
     render(<HeroBanner />);
     const initialImage = screen.getByRole('img').getAttribute('src');
-    
+
     act(() => {
       jest.advanceTimersByTime(5000);
     });
-    
+
     const newImage = screen.getByRole('img').getAttribute('src');
     expect(newImage).not.toBe(initialImage);
   });
@@ -63,13 +66,13 @@ describe('HeroBanner', () => {
     render(<HeroBanner />);
     const banner = screen.getByRole('img').parentElement;
     const initialImage = screen.getByRole('img').getAttribute('src');
-    
+
     fireEvent.mouseEnter(banner!);
-    
+
     act(() => {
       jest.advanceTimersByTime(5000);
     });
-    
+
     const imageAfterHover = screen.getByRole('img').getAttribute('src');
     expect(imageAfterHover).toBe(initialImage);
   });
@@ -78,14 +81,14 @@ describe('HeroBanner', () => {
     render(<HeroBanner />);
     const banner = screen.getByRole('img').parentElement;
     const initialImage = screen.getByRole('img').getAttribute('src');
-    
+
     fireEvent.mouseEnter(banner!);
     fireEvent.mouseLeave(banner!);
-    
+
     act(() => {
       jest.advanceTimersByTime(5000);
     });
-    
+
     const imageAfterHoverEnd = screen.getByRole('img').getAttribute('src');
     expect(imageAfterHoverEnd).not.toBe(initialImage);
   });

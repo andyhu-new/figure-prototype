@@ -3,7 +3,7 @@ import HeroBanner from './HeroBanner';
 
 const App: React.FC = () => {
   return (
-    <div>
+    <div className="main-container">
       <h1>Welcome to the Figure Prototype</h1>
       <HeroBanner />
     </div>
