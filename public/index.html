@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Banner demo created with React" />
+    <title>Banner Demo</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <style>
+      /* App styles */
+      .App {
+        text-align: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      /* Hero Banner styles */
+      .hero-banner {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        overflow: hidden;
+      }
+
+      .hero-banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: opacity 0.5s ease-in-out;
+      }
+
+      .hero-banner-controls {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        transform: translateY(-50%);
+        display: flex;
+        justify-content: space-between;
+        padding: 0 20px;
+      }
+
+      .hero-banner-button {
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.3s;
+      }
+
+      .hero-banner-button:hover {
+        background: rgba(0, 0, 0, 0.8);
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script type="text/babel">
+      const App = () => {
+        const images = [
+          'https://placecats.com/1200/400?image=1',
+          'https://placecats.com/louie/1200/400?image=2',
+          'https://placecats.com/neo_2/1200/400?image=3',
+          'https://placecats.com/neo/1200/400?image=4',
+        ];
+
+        return (
+          <div className="App">
+            <HeroBanner images={images} interval={5000} />
+          </div>
+        );
+      };
+
+      const HeroBanner = ({ images, interval = 5000 }) => {
+        const [currentIndex, setCurrentIndex] = React.useState(0);
+        const timerRef = React.useRef(null);
+
+        const nextSlide = React.useCallback(() => {
+          setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+        }, [images.length]);
+
+        const prevSlide = () => {
+          setCurrentIndex((prevIndex) => 
+            prevIndex === 0 ? images.length - 1 : prevIndex - 1
+          );
+        };
+
+        const startTimer = React.useCallback(() => {
+          if (timerRef.current) clearInterval(timerRef.current);
+          timerRef.current = setInterval(nextSlide, interval);
+        }, [interval, nextSlide]);
+
+        const stopTimer = () => {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+        };
+
+        React.useEffect(() => {
+          startTimer();
+          return () => stopTimer();
+        }, [startTimer]);
+
+        return (
+          <div 
+            className="hero-banner"
+            onMouseEnter={stopTimer}
+            onMouseLeave={startTimer}
+          >
+            <img
+              src={images[currentIndex]}
+              alt={`Slide ${currentIndex + 1}`}
+            />
+            <div className="hero-banner-controls">
+              <button 
+                className="hero-banner-button"
+                onClick={prevSlide}
+              >
+                &#8249;
+              </button>
+              <button 
+                className="hero-banner-button"
+                onClick={nextSlide}
+              >
+                &#8250;
+              </button>
+            </div>
+          </div>
+        );
+      };
+
+      ReactDOM.render(
+        <App />,
+        document.getElementById('root')
+      );
+    </script>
+  </body>
+</html>
