@@ -14,8 +14,8 @@ describe('HeroBanner', () => {
 
   test('renders hero banner with navigation buttons', () => {
     render(<HeroBanner />);
-    expect(screen.getByRole('button', { name: /previous/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /next/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '‹' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '›' })).toBeInTheDocument();
   });
 
   test('displays initial image', () => {
@@ -28,7 +28,7 @@ describe('HeroBanner', () => {
   test('changes image when clicking next button', () => {
     render(<HeroBanner />);
     const initialImage = screen.getByRole('img').getAttribute('src');
-    const nextButton = screen.getByRole('button', { name: /next/i });
+    const nextButton = screen.getByRole('button', { name: '›' });
     
     fireEvent.click(nextButton);
     
@@ -39,7 +39,7 @@ describe('HeroBanner', () => {
   test('changes image when clicking previous button', () => {
     render(<HeroBanner />);
     const initialImage = screen.getByRole('img').getAttribute('src');
-    const prevButton = screen.getByRole('button', { name: /previous/i });
+    const prevButton = screen.getByRole('button', { name: '‹' });
     
     fireEvent.click(prevButton);
     
