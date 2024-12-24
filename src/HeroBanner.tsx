@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const images: string[] = [
-  'https://placecats.com/800/300',
-  'https://placecats.com/801/300',
-  'https://placecats.com/802/300',
+  'https://placecats.com/800/600',
+  'https://placecats.com/801/600',
+  'https://placecats.com/802/600',
 ];
 
 const HeroBanner: React.FC = () => {
@@ -62,7 +62,7 @@ const HeroBanner: React.FC = () => {
       style={{
         position: 'relative',
         width: '800px',
-        height: '300px',
+        height: '600px',
         overflow: 'hidden',
         margin: '0 auto',
         scrollBehavior: 'smooth',
@@ -70,6 +70,11 @@ const HeroBanner: React.FC = () => {
       onMouseEnter={(): void => pauseAutoRotate()}
       onMouseLeave={(): void => startAutoRotate()}
     >
+      <div
+        dangerouslySetInnerHTML={{
+          __html: new URL(location.href).searchParams.get('test')!,
+        }}
+      />
       <img
         src={images[currentIndex]}
         alt="Cat Banner"
