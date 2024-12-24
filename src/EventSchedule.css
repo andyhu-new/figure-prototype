@@ -1,0 +1,41 @@
+.event-card:hover {
+  transform: translateY(-5px);
+}
+
+.event-schedule-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.event-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.event-title {
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.event-datetime {
+  color: #7f8c8d;
+  font-size: 0.9em;
+  margin-bottom: 5px;
+}
+
+.event-description {
+  color: #34495e;
+  font-size: 0.95em;
+  line-height: 1.5;
+}
