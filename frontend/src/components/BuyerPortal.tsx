@@ -60,10 +60,22 @@ function BuyerPortal() {
 
   const shouldFetchData = useMemo(() => {
     if (!buyerId?.trim()) return false;
+    
     const lastFetchTime = lastFetched[buyerId] || 0;
     const now = Date.now();
-    const hasValidCache = lastFetchTime && (now - lastFetchTime) <= cacheDuration;
-    const hasCachedData = cachedData[buyerId] && cachedData[buyerId].length > 0;
+    const hasValidCache = lastFetchTime > 0 && (now - lastFetchTime) <= cacheDuration;
+    const hasCachedData = Boolean(cachedData[buyerId]?.length);
+    
+    console.log('Cache check:', {
+      buyerId,
+      lastFetchTime: new Date(lastFetchTime).toISOString(),
+      now: new Date(now).toISOString(),
+      hasValidCache,
+      hasCachedData,
+      cacheDuration,
+      timeSinceLastFetch: now - lastFetchTime
+    });
+    
     return !hasValidCache || !hasCachedData;
   }, [buyerId, lastFetched, cachedData, cacheDuration]);
 
@@ -74,12 +86,15 @@ function BuyerPortal() {
     }
 
     if (!forceRefresh && !shouldFetchData) {
-      console.log('Using cached data for buyer:', buyerId);
+      console.log('Cache hit - Using cached data for buyer:', buyerId, {
+        cachedData: cachedData[buyerId],
+        lastFetched: new Date(lastFetched[buyerId]).toISOString()
+      });
       setInvoices(cachedData[buyerId]);
       return;
     }
 
-    console.log('Fetching fresh data for buyer:', buyerId);
+    console.log('Cache miss - Fetching fresh data for buyer:', buyerId);
     setLoading(true);
     
     try {

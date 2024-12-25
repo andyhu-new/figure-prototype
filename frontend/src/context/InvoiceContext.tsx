@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction } from 'react'
+import { createContext, useContext, useState, useEffect, ReactNode, Dispatch, SetStateAction } from 'react'
 
 interface Invoice {
   id: string
@@ -24,10 +24,50 @@ interface InvoiceContextType {
 const InvoiceContext = createContext<InvoiceContextType | undefined>(undefined)
 
 export function InvoiceProvider({ children }: { children: ReactNode }) {
-  const [invoices, setInvoices] = useState<Invoice[]>([])
-  const [lastFetched, setLastFetched] = useState<Record<string, number>>({})
-  const [cachedData, setCachedData] = useState<Record<string, Invoice[]>>({})
+  const [invoices, setInvoices] = useState<Invoice[]>(() => {
+    try {
+      const stored = localStorage.getItem('currentInvoices')
+      return stored ? JSON.parse(stored) : []
+    } catch (error) {
+      console.error('Error loading invoices from localStorage:', error)
+      return []
+    }
+  })
+
+  const [lastFetched, setLastFetched] = useState<Record<string, number>>(() => {
+    try {
+      const stored = localStorage.getItem('lastFetched')
+      return stored ? JSON.parse(stored) : {}
+    } catch (error) {
+      console.error('Error loading lastFetched from localStorage:', error)
+      return {}
+    }
+  })
+
+  const [cachedData, setCachedData] = useState<Record<string, Invoice[]>>(() => {
+    try {
+      const stored = localStorage.getItem('cachedData')
+      return stored ? JSON.parse(stored) : {}
+    } catch (error) {
+      console.error('Error loading cachedData from localStorage:', error)
+      return {}
+    }
+  })
+
   const cacheDuration = 5 * 60 * 1000 // 5 minutes
+
+  // Persist state changes to localStorage
+  useEffect(() => {
+    localStorage.setItem('currentInvoices', JSON.stringify(invoices))
+  }, [invoices])
+
+  useEffect(() => {
+    localStorage.setItem('lastFetched', JSON.stringify(lastFetched))
+  }, [lastFetched])
+
+  useEffect(() => {
+    localStorage.setItem('cachedData', JSON.stringify(cachedData))
+  }, [cachedData])
 
   return (
     <InvoiceContext.Provider value={{ 
