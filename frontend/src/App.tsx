@@ -1,14 +1,18 @@
+import { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { InvoiceProvider } from './context/InvoiceContext'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Building2, UserCircle, Users } from "lucide-react"
-import BuyerPortal from './components/BuyerPortal'
-import SellerPortal from './components/SellerPortal'
-import PlatformPortal from './components/PlatformPortal'
+
+const BuyerPortal = lazy(() => import('./components/BuyerPortal'))
+const SellerPortal = lazy(() => import('./components/SellerPortal'))
+const PlatformPortal = lazy(() => import('./components/PlatformPortal'))
 
 function App() {
   return (
     <Router>
+      <InvoiceProvider>
       <div className="min-h-screen bg-gray-100">
         <nav className="bg-white shadow-sm">
           <div className="max-w-7xl mx-auto px-4 py-3">
@@ -39,7 +43,12 @@ function App() {
         </nav>
 
         <main className="max-w-7xl mx-auto px-4 py-8">
-          <Routes>
+          <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+          }>
+            <Routes>
             <Route path="/" element={
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Link to="/buyer">
@@ -87,8 +96,10 @@ function App() {
             <Route path="/seller" element={<SellerPortal />} />
             <Route path="/platform" element={<PlatformPortal />} />
           </Routes>
+          </Suspense>
         </main>
       </div>
+      </InvoiceProvider>
     </Router>
   )
 }

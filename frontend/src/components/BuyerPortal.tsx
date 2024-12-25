@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useInvoices } from '../context/InvoiceContext'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -23,7 +24,8 @@ import {
 
 function BuyerPortal() {
   const [buyerId] = useState('B100')
-  const [invoices, setInvoices] = useState([])
+  const { invoices, setInvoices, lastFetched, setLastFetched, cacheDuration } = useInvoices()
+  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([])
   const [selectedSeller, setSelectedSeller] = useState<string | null>(null)
@@ -56,31 +58,50 @@ function BuyerPortal() {
     setSelectedSeller(null)
   }
 
-  const fetchInvoices = async () => {
-    setLoading(true)
-    console.log('Fetching invoices for buyer:', buyerId)
+  const fetchInvoices = async (forceRefresh = false) => {
+    if (!buyerId?.trim()) {
+      setError('Invalid Buyer ID')
+      return
+    }
+
+    const lastFetchTime = lastFetched[buyerId] || 0
+    const now = Date.now()
+    const hasValidCache = lastFetchTime && (now - lastFetchTime) <= cacheDuration
     
+    // Skip fetch if cache is valid and not forcing refresh
+    if (hasValidCache && !forceRefresh) {
+      console.log('Using cached data for buyer:', buyerId)
+      return
+    }
+
+    setLoading(true)
     try {
+      console.log('Fetching fresh data for buyer:', buyerId)
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/invoices/buyer/${buyerId}`)
-      console.log('Fetch response status:', response.status)
-      
       if (response.ok) {
         const data = await response.json()
-        console.log('Fetched invoices:', data)
         setInvoices(data)
+        setLastFetched((prev: Record<string, number>) => ({ ...prev, [buyerId]: now }))
+        setError(null)
       } else {
         const errorData = await response.json()
-        console.error('Error response:', errorData)
+        setError(`Failed to fetch invoices: ${errorData.detail || 'Unknown error'}`)
       }
     } catch (error) {
-      console.error('Error fetching invoices:', error)
+      setError('Failed to fetch invoices. Please try again.')
     }
     setLoading(false)
   }
 
+  const handleRefresh = () => {
+    fetchInvoices(true)
+  }
+
   useEffect(() => {
-    fetchInvoices()
-  }, [])
+    if (buyerId?.trim()) {
+      fetchInvoices()
+    }
+  }, [buyerId])
 
   return (
     <div className="space-y-6">
@@ -89,6 +110,9 @@ function BuyerPortal() {
           <CardTitle>All Invoices</CardTitle>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="text-red-500 mb-4">{error}</div>
+          )}
           <Table>
             <TableHeader>
               <TableRow>
@@ -125,7 +149,7 @@ function BuyerPortal() {
           </Table>
           <div className="mt-4">
             <div className="flex gap-4">
-              <Button onClick={fetchInvoices} disabled={loading}>
+              <Button onClick={handleRefresh} disabled={loading}>
                 {loading ? 'Loading...' : 'Refresh'}
               </Button>
               <Button 

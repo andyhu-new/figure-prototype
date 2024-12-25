@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useInvoices } from '../context/InvoiceContext'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,21 +16,47 @@ import { Upload } from "lucide-react"
 
 function SellerPortal() {
   const [sellerId, setSellerId] = useState('')
-  const [invoices, setInvoices] = useState([])
+  const { invoices, setInvoices, lastFetched, setLastFetched, cacheDuration } = useInvoices()
+  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = async (forceRefresh = false) => {
+    if (!sellerId?.trim()) {
+      setError('Please enter a valid Seller ID')
+      return
+    }
+
+    const lastFetchTime = lastFetched[sellerId] || 0
+    const now = Date.now()
+    const hasValidCache = lastFetchTime && (now - lastFetchTime) <= cacheDuration
+    
+    // Skip fetch if cache is valid and not forcing refresh
+    if (hasValidCache && !forceRefresh) {
+      console.log('Using cached data for seller:', sellerId)
+      return
+    }
+
     setLoading(true)
     try {
+      console.log('Fetching fresh data for seller:', sellerId)
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/invoices/seller/${sellerId}`)
       if (response.ok) {
         const data = await response.json()
         setInvoices(data)
+        setLastFetched((prev: Record<string, number>) => ({ ...prev, [sellerId]: now }))
+        setError(null)
+      } else {
+        const errorData = await response.json()
+        setError(`Failed to fetch invoices: ${errorData.detail || 'Unknown error'}`)
       }
     } catch (error) {
-      console.error('Error fetching invoices:', error)
+      setError('Failed to fetch invoices. Please try again.')
     }
     setLoading(false)
+  }
+
+  const handleRefresh = () => {
+    fetchInvoices(true)
   }
 
   const uploadInvoice = async (invoiceId: string, file: File) => {
@@ -43,15 +70,22 @@ function SellerPortal() {
       })
       if (response.ok) {
         fetchInvoices()
+        setError(null)
+      } else {
+        const errorData = await response.json()
+        setError(`Failed to upload invoice: ${errorData.detail || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Error uploading invoice:', error)
+      setError('Failed to upload invoice. Please try again.')
     }
   }
 
   useEffect(() => {
-    fetchInvoices()
-  }, [])
+    if (sellerId?.trim()) {
+      fetchInvoices()
+    }
+  }, [sellerId])
 
   return (
     <Card>
@@ -59,6 +93,9 @@ function SellerPortal() {
         <CardTitle>Pending Invoice Requests</CardTitle>
       </CardHeader>
       <CardContent>
+        {error && (
+          <div className="text-red-500 mb-4">{error}</div>
+        )}
         <div className="mb-6 space-y-4">
           <div>
             <Label htmlFor="sellerId">Seller ID</Label>
@@ -70,7 +107,7 @@ function SellerPortal() {
               onChange={(e) => setSellerId(e.target.value)}
             />
           </div>
-          <Button onClick={fetchInvoices} disabled={loading || !sellerId}>
+          <Button onClick={handleRefresh} disabled={loading || !sellerId}>
             {loading ? 'Loading...' : 'Load Invoices'}
           </Button>
         </div>
