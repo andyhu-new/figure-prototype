@@ -16,6 +16,8 @@ interface InvoiceContextType {
   setInvoices: (invoices: Invoice[]) => void
   lastFetched: Record<string, number>
   setLastFetched: Dispatch<SetStateAction<Record<string, number>>>
+  cachedData: Record<string, Invoice[]>
+  setCachedData: Dispatch<SetStateAction<Record<string, Invoice[]>>>
   cacheDuration: number
 }
 
@@ -24,6 +26,7 @@ const InvoiceContext = createContext<InvoiceContextType | undefined>(undefined)
 export function InvoiceProvider({ children }: { children: ReactNode }) {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [lastFetched, setLastFetched] = useState<Record<string, number>>({})
+  const [cachedData, setCachedData] = useState<Record<string, Invoice[]>>({})
   const cacheDuration = 5 * 60 * 1000 // 5 minutes
 
   return (
@@ -32,6 +35,8 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setInvoices, 
       lastFetched, 
       setLastFetched,
+      cachedData,
+      setCachedData,
       cacheDuration 
     }}>
       {children}

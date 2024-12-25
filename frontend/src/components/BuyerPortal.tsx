@@ -24,7 +24,7 @@ import {
 
 function BuyerPortal() {
   const [buyerId] = useState('B100')
-  const { invoices, setInvoices, lastFetched, setLastFetched, cacheDuration } = useInvoices()
+  const { invoices, setInvoices, lastFetched, setLastFetched, cachedData, setCachedData, cacheDuration } = useInvoices()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([])
@@ -67,13 +67,27 @@ function BuyerPortal() {
     const lastFetchTime = lastFetched[buyerId] || 0
     const now = Date.now()
     const hasValidCache = lastFetchTime && (now - lastFetchTime) <= cacheDuration
+    const hasCachedData = cachedData[buyerId] && cachedData[buyerId].length > 0
     
-    // Skip fetch if cache is valid and not forcing refresh
-    if (hasValidCache && !forceRefresh) {
-      console.log('Using cached data for buyer:', buyerId)
+    console.log('Cache check:', {
+      buyerId,
+      lastFetchTime: new Date(lastFetchTime).toISOString(),
+      now: new Date(now).toISOString(),
+      hasValidCache,
+      hasCachedData,
+      forceRefresh,
+      cacheDuration
+    })
+
+    // Use cached data if available, valid, and not forcing refresh
+    if (hasValidCache && hasCachedData && !forceRefresh) {
+      console.log('Cache hit - Using cached data for buyer:', buyerId)
+      setInvoices(cachedData[buyerId])
+      setLoading(false)
       return
     }
 
+    console.log('Cache miss - Fetching fresh data for buyer:', buyerId)
     setLoading(true)
     try {
       console.log('Fetching fresh data for buyer:', buyerId)
@@ -81,7 +95,8 @@ function BuyerPortal() {
       if (response.ok) {
         const data = await response.json()
         setInvoices(data)
-        setLastFetched((prev: Record<string, number>) => ({ ...prev, [buyerId]: now }))
+        setCachedData((prev) => ({ ...prev, [buyerId]: data }))
+        setLastFetched((prev) => ({ ...prev, [buyerId]: now }))
         setError(null)
       } else {
         const errorData = await response.json()

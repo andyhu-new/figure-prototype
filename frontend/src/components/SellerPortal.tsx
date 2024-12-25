@@ -16,7 +16,7 @@ import { Upload } from "lucide-react"
 
 function SellerPortal() {
   const [sellerId, setSellerId] = useState('')
-  const { invoices, setInvoices, lastFetched, setLastFetched, cacheDuration } = useInvoices()
+  const { invoices, setInvoices, lastFetched, setLastFetched, cachedData, setCachedData, cacheDuration } = useInvoices()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -29,13 +29,27 @@ function SellerPortal() {
     const lastFetchTime = lastFetched[sellerId] || 0
     const now = Date.now()
     const hasValidCache = lastFetchTime && (now - lastFetchTime) <= cacheDuration
+    const hasCachedData = cachedData[sellerId] && cachedData[sellerId].length > 0
     
-    // Skip fetch if cache is valid and not forcing refresh
-    if (hasValidCache && !forceRefresh) {
-      console.log('Using cached data for seller:', sellerId)
+    console.log('Cache check:', {
+      sellerId,
+      lastFetchTime: new Date(lastFetchTime).toISOString(),
+      now: new Date(now).toISOString(),
+      hasValidCache,
+      hasCachedData,
+      forceRefresh,
+      cacheDuration
+    })
+
+    // Use cached data if available, valid, and not forcing refresh
+    if (hasValidCache && hasCachedData && !forceRefresh) {
+      console.log('Cache hit - Using cached data for seller:', sellerId)
+      setInvoices(cachedData[sellerId])
+      setLoading(false)
       return
     }
 
+    console.log('Cache miss - Fetching fresh data for seller:', sellerId)
     setLoading(true)
     try {
       console.log('Fetching fresh data for seller:', sellerId)
@@ -43,7 +57,8 @@ function SellerPortal() {
       if (response.ok) {
         const data = await response.json()
         setInvoices(data)
-        setLastFetched((prev: Record<string, number>) => ({ ...prev, [sellerId]: now }))
+        setCachedData((prev) => ({ ...prev, [sellerId]: data }))
+        setLastFetched((prev) => ({ ...prev, [sellerId]: now }))
         setError(null)
       } else {
         const errorData = await response.json()
