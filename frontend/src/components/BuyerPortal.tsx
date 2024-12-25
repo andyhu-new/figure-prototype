@@ -132,11 +132,45 @@ function BuyerPortal() {
 
   useEffect(() => {
     if (buyerId?.trim()) {
+      // Add performance mark for component mount
+      performance.mark('buyerPortalMount');
+      
       const controller = new AbortController();
-      fetchInvoices(false, controller.signal);
+      
+      // Measure initial render and data fetch
+      const measurePerformance = async () => {
+        try {
+          performance.mark('fetchStart');
+          await fetchInvoices(false, controller.signal);
+          performance.mark('fetchEnd');
+          
+          // Create performance measurements
+          performance.measure('totalLoadTime', 'buyerPortalMount', 'fetchEnd');
+          performance.measure('fetchTime', 'fetchStart', 'fetchEnd');
+          
+          // Log performance metrics
+          const loadMeasure = performance.getEntriesByName('totalLoadTime')[0];
+          const fetchMeasure = performance.getEntriesByName('fetchTime')[0];
+          
+          console.log('Performance Metrics:', {
+            totalLoadTime: loadMeasure.duration.toFixed(2) + 'ms',
+            fetchTime: fetchMeasure.duration.toFixed(2) + 'ms',
+            cacheStatus: shouldFetchData ? 'miss' : 'hit',
+            timestamp: new Date().toISOString()
+          });
+          
+          // Clear marks and measures
+          performance.clearMarks();
+          performance.clearMeasures();
+        } catch (error) {
+          console.error('Error measuring performance:', error);
+        }
+      };
+      
+      measurePerformance();
       return () => controller.abort();
     }
-  }, [buyerId, fetchInvoices]);
+  }, [buyerId, fetchInvoices, shouldFetchData]);
 
   return (
     <div className="space-y-6">

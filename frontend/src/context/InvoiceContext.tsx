@@ -56,18 +56,34 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
 
   const cacheDuration = 5 * 60 * 1000 // 5 minutes
 
-  // Persist state changes to localStorage
+  // Persist state changes to localStorage with error handling and logging
   useEffect(() => {
-    localStorage.setItem('currentInvoices', JSON.stringify(invoices))
-  }, [invoices])
+    try {
+      console.log('Persisting invoices to localStorage:', { count: invoices.length });
+      localStorage.setItem('currentInvoices', JSON.stringify(invoices));
+    } catch (error) {
+      console.error('Error persisting invoices to localStorage:', error);
+    }
+  }, [invoices]);
 
   useEffect(() => {
-    localStorage.setItem('lastFetched', JSON.stringify(lastFetched))
-  }, [lastFetched])
+    try {
+      console.log('Persisting lastFetched to localStorage:', lastFetched);
+      localStorage.setItem('lastFetched', JSON.stringify(lastFetched));
+    } catch (error) {
+      console.error('Error persisting lastFetched to localStorage:', error);
+    }
+  }, [lastFetched]);
 
   useEffect(() => {
-    localStorage.setItem('cachedData', JSON.stringify(cachedData))
-  }, [cachedData])
+    try {
+      const cacheSize = Object.keys(cachedData).length;
+      console.log('Persisting cachedData to localStorage:', { cacheSize });
+      localStorage.setItem('cachedData', JSON.stringify(cachedData));
+    } catch (error) {
+      console.error('Error persisting cachedData to localStorage:', error);
+    }
+  }, [cachedData]);
 
   return (
     <InvoiceContext.Provider value={{ 
