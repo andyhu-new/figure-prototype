@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useInvoices } from '../context/InvoiceContext'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -58,55 +58,58 @@ function BuyerPortal() {
     setSelectedSeller(null)
   }
 
-  const fetchInvoices = async (forceRefresh = false) => {
+  const shouldFetchData = useMemo(() => {
+    if (!buyerId?.trim()) return false;
+    const lastFetchTime = lastFetched[buyerId] || 0;
+    const now = Date.now();
+    const hasValidCache = lastFetchTime && (now - lastFetchTime) <= cacheDuration;
+    const hasCachedData = cachedData[buyerId] && cachedData[buyerId].length > 0;
+    return !hasValidCache || !hasCachedData;
+  }, [buyerId, lastFetched, cachedData, cacheDuration]);
+
+  const fetchInvoices = useCallback(async (forceRefresh = false, signal?: AbortSignal) => {
     if (!buyerId?.trim()) {
-      setError('Invalid Buyer ID')
-      return
+      setError('Invalid Buyer ID');
+      return;
     }
 
-    const lastFetchTime = lastFetched[buyerId] || 0
-    const now = Date.now()
-    const hasValidCache = lastFetchTime && (now - lastFetchTime) <= cacheDuration
-    const hasCachedData = cachedData[buyerId] && cachedData[buyerId].length > 0
+    if (!forceRefresh && !shouldFetchData) {
+      console.log('Using cached data for buyer:', buyerId);
+      setInvoices(cachedData[buyerId]);
+      return;
+    }
+
+    console.log('Fetching fresh data for buyer:', buyerId);
+    setLoading(true);
     
-    console.log('Cache check:', {
-      buyerId,
-      lastFetchTime: new Date(lastFetchTime).toISOString(),
-      now: new Date(now).toISOString(),
-      hasValidCache,
-      hasCachedData,
-      forceRefresh,
-      cacheDuration
-    })
-
-    // Use cached data if available, valid, and not forcing refresh
-    if (hasValidCache && hasCachedData && !forceRefresh) {
-      console.log('Cache hit - Using cached data for buyer:', buyerId)
-      setInvoices(cachedData[buyerId])
-      setLoading(false)
-      return
-    }
-
-    console.log('Cache miss - Fetching fresh data for buyer:', buyerId)
-    setLoading(true)
     try {
-      console.log('Fetching fresh data for buyer:', buyerId)
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/invoices/buyer/${buyerId}`)
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/invoices/buyer/${buyerId}`, { 
+        signal,
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      
       if (response.ok) {
-        const data = await response.json()
-        setInvoices(data)
-        setCachedData((prev) => ({ ...prev, [buyerId]: data }))
-        setLastFetched((prev) => ({ ...prev, [buyerId]: now }))
-        setError(null)
+        const data = await response.json();
+        setInvoices(data);
+        setCachedData((prev) => ({ ...prev, [buyerId]: data }));
+        setLastFetched((prev) => ({ ...prev, [buyerId]: Date.now() }));
+        setError(null);
       } else {
-        const errorData = await response.json()
-        setError(`Failed to fetch invoices: ${errorData.detail || 'Unknown error'}`)
+        const errorData = await response.json();
+        setError(`Failed to fetch invoices: ${errorData.detail || 'Unknown error'}`);
       }
     } catch (error) {
-      setError('Failed to fetch invoices. Please try again.')
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
+      setError('Failed to fetch invoices. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false)
-  }
+  }, [buyerId, shouldFetchData, cachedData]);
 
   const handleRefresh = () => {
     fetchInvoices(true)
@@ -114,9 +117,11 @@ function BuyerPortal() {
 
   useEffect(() => {
     if (buyerId?.trim()) {
-      fetchInvoices()
+      const controller = new AbortController();
+      fetchInvoices(false, controller.signal);
+      return () => controller.abort();
     }
-  }, [buyerId])
+  }, [buyerId, fetchInvoices]);
 
   return (
     <div className="space-y-6">
