@@ -41,6 +41,7 @@ export function BuyerPortal() {
   // Initialize form and state
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedHeader, setSelectedHeader] = useState<InvoiceHeader | null>(null);
+  const [showContactDialog, setShowContactDialog] = useState<{ contact_person: string; contact_info: string } | null>(null);
   // Initialize form and state
   const form = useForm<z.infer<typeof headerFormSchema>>({
     resolver: zodResolver(headerFormSchema),
@@ -229,12 +230,14 @@ export function BuyerPortal() {
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">账单编号</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">卖家名称</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">金额</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">含税金额</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">税额</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">发票状态</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">支付状态</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">消费时间</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">选择</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">卖家联系方式</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -250,7 +253,8 @@ export function BuyerPortal() {
                           )}
                           {invoice.bill_number}</td>
                         <td className="px-6 py-4 whitespace-nowrap">{invoice.seller_name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{invoice.amount}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">¥{invoice.amount_with_tax}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">¥{invoice.tax_amount}</td>
                         <td className="px-6 py-4 whitespace-nowrap">{invoice.invoice_status}</td>
                         <td className="px-6 py-4 whitespace-nowrap">{invoice.payment_status}</td>
                         <td className="px-6 py-4 whitespace-nowrap">{format(new Date(invoice.consumption_time), "yyyy-MM-dd")}</td>
@@ -280,11 +284,39 @@ export function BuyerPortal() {
                             className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                           />
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {invoice.seller_contact && (
+                            <button
+                              onClick={() => setShowContactDialog(invoice.seller_contact || null)}
+                              className="text-indigo-600 hover:text-indigo-900"
+                            >
+                              查看联系方式
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
+
+              {/* Contact Dialog */}
+              {showContactDialog && (
+                <Dialog open={!!showContactDialog} onOpenChange={() => setShowContactDialog(null)}>
+                  <DialogContent className="bg-white">
+                    <DialogHeader>
+                      <DialogTitle>卖家联系方式</DialogTitle>
+                    </DialogHeader>
+                    <div className="mt-4 space-y-2">
+                      <p><strong>联系人:</strong> {showContactDialog.contact_person}</p>
+                      <p><strong>联系方式:</strong> {showContactDialog.contact_info}</p>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={() => setShowContactDialog(null)}>关闭</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
 
               {selectedInvoices.length > 0 && (
                 <div className="mt-4 flex justify-end">
@@ -355,7 +387,7 @@ export function BuyerPortal() {
                   <ul className="mt-1 list-disc list-inside text-sm text-gray-600">
                     {selectedInvoices.map((invoice) => (
                       <li key={invoice.id}>
-                        {invoice.seller_name} - ¥{invoice.amount}
+                        {invoice.seller_name} - ¥{invoice.amount_with_tax}
                       </li>
                     ))}
                   </ul>

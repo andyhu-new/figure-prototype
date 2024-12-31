@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "invoice-portal-backend"
+version = "0.1.0"
+description = "Invoice Portal Backend"
+authors = ["Devin"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "0.109.2"
+uvicorn = "0.27.1"
+python-multipart = "0.0.9"
+python-jose = {version = "3.3.0", extras = ["cryptography"]}
+passlib = {version = "1.7.4", extras = ["bcrypt"]}
+sqlalchemy = "2.0.27"
+pandas = "^2.2.3"
+openpyxl = "^3.1.5"
+python-dotenv = "1.0.1"
+pydantic = "2.6.1"
+pydantic-settings = "2.1.0"
+email-validator = "2.1.0.post1"
+python-dateutil = "2.8.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

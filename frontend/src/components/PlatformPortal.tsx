@@ -155,7 +155,7 @@ export function PlatformPortal() {
             disabled={selectedInvoices.length === 0}
             className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
           >
-            发送批量邮件
+            导出Excel
           </button>
         </div>
 
@@ -168,7 +168,8 @@ export function PlatformPortal() {
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">账单编号</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">买家ID</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">卖家名称</th>
-                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">金额</th>
+                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">含税金额</th>
+                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">税额</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">发票状态</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">支付状态</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">消费时间</th>
@@ -189,14 +190,14 @@ export function PlatformPortal() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.bill_number}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.buyer_id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.seller_name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">¥{invoice.amount}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">¥{invoice.amount_with_tax}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {invoice.invoice_status === 'requested' ? '待开具' :
                      invoice.invoice_status === 'uploaded' ? '已开具' :
                      '已拒绝'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {invoice.payment_status === 'outstanding' ? '未支付' : '已逾期'}
+                    {invoice.payment_status === 'Outstanding' ? '未支付' : '已逾期'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {format(new Date(invoice.consumption_time), 'yyyy-MM-dd HH:mm')}
@@ -239,7 +240,7 @@ export function PlatformPortal() {
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">金额</dt>
-                  <dd className="mt-1 text-sm text-gray-900">¥{selectedInvoice.amount}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">¥{selectedInvoice.amount_with_tax}</dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">买家ID</dt>

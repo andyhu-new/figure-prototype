@@ -58,7 +58,7 @@ function setToLocalStorage<T>(key: string, data: T): void {
 }
 
 export function InvoiceProvider({ children }: { children: ReactNode }) {
-  const [buyerId, setBuyerId] = useState('buyer1');
+  const [buyerId, setBuyerId] = useState<string>('buyer1');
   const [invoices, setInvoices] = useState<Invoice[]>(() => {
     // Generate 30 mock invoices
     const mockInvoices: Invoice[] = Array.from({ length: 30 }, (_, i) => {
@@ -66,7 +66,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       date.setDate(date.getDate() + Math.floor(Math.random() * 31)); // Random date in January 2024
       
       const statuses: Array<Invoice['invoice_status']> = ['requested', 'uploaded', 'rejected'];
-      const paymentStatuses: Array<Invoice['payment_status']> = ['outstanding', 'past_due'];
+      const paymentStatuses: Array<Invoice['payment_status']> = ['Outstanding', 'Past Due'];
       const sellers = [
         { id: 'seller1', name: '卖家一' },
         { id: 'seller2', name: '卖家二' },
@@ -78,9 +78,10 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
         id: String(i + 1),
         buyer_id: `buyer${Math.floor(Math.random() * 5) + 1}`,
         seller_id: seller.id,
-        amount: Math.floor(Math.random() * 10000) / 100,
+        amount_with_tax: Math.floor(Math.random() * 10000) / 100,
+        tax_amount: Math.floor(Math.random() * 1000) / 100,
         invoice_status: statuses[Math.floor(Math.random() * statuses.length)],
-        payment_status: paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)],
+        payment_status: Math.random() > 0.5 ? 'Outstanding' : 'Past Due',
         consumption_time: date.toISOString().split('T')[0],
         bill_number: `BILL${String(i + 1).padStart(3, '0')}`,
         seller_name: seller.name,
@@ -89,7 +90,11 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
         messages: [],
         uploaded_invoice_url: Math.random() > 0.7 ? `https://example.com/invoice${i + 1}.pdf` : undefined,
         seller_reply: '',
-        remarks: ''
+        remarks: '',
+        seller_contact: {
+          contact_person: `${seller.name}的联系人`,
+          contact_info: `电话: ${Math.floor(Math.random() * 900000000 + 100000000)}`
+        }
       };
     });
     return mockInvoices;
@@ -139,12 +144,12 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
   }) => {
     try {
       // Generate mock data if no invoices exist
-      let data = invoices.length > 0 ? [...invoices] : Array.from({ length: 30 }, (_, i) => {
+      let data: Invoice[] = invoices.length > 0 ? [...invoices] : Array.from({ length: 30 }, (_, i) => {
         const date = new Date('2024-01-01');
         date.setDate(date.getDate() + Math.floor(Math.random() * 31));
         
         const statuses: Array<Invoice['invoice_status']> = ['requested', 'uploaded', 'rejected'];
-        const paymentStatuses: Array<Invoice['payment_status']> = ['outstanding', 'past_due'];
+        const paymentStatuses: Array<Invoice['payment_status']> = ['Outstanding', 'Past Due'];
         const sellers = [
           { id: 'seller1', name: '卖家一' },
           { id: 'seller2', name: '卖家二' },
@@ -156,9 +161,10 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
           id: String(i + 1),
           buyer_id: id,
           seller_id: seller.id,
-          amount: Math.floor(Math.random() * 10000) / 100,
+          amount_with_tax: Math.floor(Math.random() * 10000) / 100,
+          tax_amount: Math.floor(Math.random() * 1000) / 100,
           invoice_status: statuses[Math.floor(Math.random() * statuses.length)],
-          payment_status: paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)],
+          payment_status: Math.random() > 0.5 ? 'Outstanding' : 'Past Due',
           consumption_time: date.toISOString().split('T')[0],
           bill_number: `BILL${String(i + 1).padStart(3, '0')}`,
           seller_name: seller.name,
@@ -167,9 +173,14 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
           messages: [],
           uploaded_invoice_url: Math.random() > 0.7 ? `https://example.com/invoice${i + 1}.pdf` : undefined,
           seller_reply: '',
-          remarks: ''
+          remarks: '',
+          seller_contact: {
+            contact_person: `${seller.name}的联系人`,
+            contact_info: `电话: ${Math.floor(Math.random() * 900000000 + 100000000)}`
+          }
         };
       });
+
       console.log('Initial data:', { data: data.map(d => ({ id: d.id, date: d.consumption_time })) });
       
       // Apply filters
@@ -177,22 +188,22 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
         console.log('Applying filters:', filters);
         
         // Filter by buyer ID
-        if (filters.buyerId && filters.buyerId.trim() !== '') {
-          data = data.filter(invoice => invoice.buyer_id === filters.buyerId);
+        if (filters?.buyerId && filters.buyerId.trim() !== '') {
+          data = data.filter(invoice => invoice.buyer_id === filters?.buyerId);
           console.log('After buyer ID filter:', { count: data.length });
         }
         
         // Filter by seller ID/name
-        if (filters.sellerId && filters.sellerId.trim() !== '') {
+        if (filters?.sellerId && filters.sellerId.trim() !== '') {
           data = data.filter(invoice => 
-            invoice.seller_id === filters.sellerId || 
-            invoice.seller_name === filters.sellerId
+            invoice.seller_id === filters?.sellerId || 
+            invoice.seller_name === filters?.sellerId
           );
           console.log('After seller ID filter:', { count: data.length });
         }
 
-        if (filters.status && filters.status.length > 0) {
-          data = data.filter(invoice => filters.status?.includes(invoice.invoice_status));
+        if (filters?.status && filters.status.length > 0) {
+          data = data.filter(invoice => filters?.status?.includes(invoice.invoice_status));
           console.log('After status filter:', { count: data.length });
         }
         if (filters.startDate && filters.startDate !== '') {

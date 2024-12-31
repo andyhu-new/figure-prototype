@@ -12,9 +12,10 @@ export interface Invoice {
   id: string;
   buyer_id: string;
   seller_id: string;
-  amount: number;
+  amount_with_tax: number;  // Changed from amount
+  tax_amount: number;       // New field
   invoice_status: 'requested' | 'uploaded' | 'rejected';
-  payment_status: 'outstanding' | 'past_due';
+  payment_status: 'Outstanding' | 'Past Due';  // Updated casing
   consumption_time: string;
   bill_number: string;
   seller_name: string;
@@ -26,6 +27,10 @@ export interface Invoice {
   created_at: string;
   updated_at: string;
   messages?: Message[];
+  seller_contact?: {        // New field
+    contact_person: string;
+    contact_info: string;
+  };
 }
 
 export interface InvoiceHeader {

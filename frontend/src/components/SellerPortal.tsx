@@ -192,7 +192,8 @@ export function SellerPortal() {
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">买家名称</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">产品名称</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">产品ID</th>
-                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">金额</th>
+                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">含税金额</th>
+                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">税额</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">消费时间</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">发票状态</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">支付状态</th>
@@ -204,11 +205,16 @@ export function SellerPortal() {
             <tbody className="bg-white divide-y divide-gray-200">
               {invoices.map((invoice) => (
                 <tr key={invoice.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.buyer_id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {invoice.invoice_status === 'requested' && (
+                      <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2" />
+                    )}
+                    {invoice.buyer_id}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.buyer_id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.product_name || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.product_id || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">¥{invoice.amount}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">¥{invoice.amount_with_tax}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {format(new Date(invoice.consumption_time), 'yyyy-MM-dd HH:mm')}
                   </td>
