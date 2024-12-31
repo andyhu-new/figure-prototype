@@ -247,11 +247,7 @@ export function BuyerPortal() {
                       return 0;
                     }).map((invoice) => (
                       <tr key={invoice.id}>
-                        <td className="px-6 py-4 whitespace-nowrap flex items-center">
-                          {invoice.invoice_status === 'requested' && (
-                            <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2" />
-                          )}
-                          {invoice.bill_number}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{invoice.bill_number}</td>
                         <td className="px-6 py-4 whitespace-nowrap">{invoice.seller_name}</td>
                         <td className="px-6 py-4 whitespace-nowrap">¥{invoice.amount_with_tax}</td>
                         <td className="px-6 py-4 whitespace-nowrap">¥{invoice.tax_amount}</td>

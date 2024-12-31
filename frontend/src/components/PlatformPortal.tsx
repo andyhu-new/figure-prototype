@@ -151,7 +151,34 @@ export function PlatformPortal() {
             <span className="ml-2 text-sm text-gray-700">全选</span>
           </div>
           <button
-            onClick={() => setShowEmailDialog(true)}
+            onClick={() => {
+              if (selectedInvoices.length === 0) return;
+              const data = invoices
+                .filter(inv => selectedInvoices.includes(inv.id))
+                .map(inv => ({
+                  '账单编号': inv.bill_number,
+                  '产品名称': inv.product_name,
+                  '产品ID': inv.product_id,
+                  '买家ID': inv.buyer_id,
+                  '卖家名称': inv.seller_name,
+                  '含税金额': inv.amount_with_tax,
+                  '税额': inv.tax_amount,
+                  '发票状态': inv.invoice_status === 'requested' ? '待开具' : 
+                            inv.invoice_status === 'uploaded' ? '已开具' : '已拒绝',
+                  '支付状态': inv.payment_status === 'Outstanding' ? '未支付' : '已逾期',
+                  '消费时间': format(new Date(inv.consumption_time), 'yyyy-MM-dd HH:mm')
+                }));
+              const csvContent = "data:text/csv;charset=utf-8," + 
+                Object.keys(data[0]).join(",") + "\n" +
+                data.map(row => Object.values(row).join(",")).join("\n");
+              const encodedUri = encodeURI(csvContent);
+              const link = document.createElement("a");
+              link.setAttribute("href", encodedUri);
+              link.setAttribute("download", "发票明细.csv");
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }}
             disabled={selectedInvoices.length === 0}
             className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
           >
@@ -282,40 +309,7 @@ export function PlatformPortal() {
         </div>
       )}
 
-      {/* Email Template Dialog */}
-      {showEmailDialog && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full">
-            <h2 className="text-xl font-bold mb-4">发送批量邮件</h2>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                邮件内容模板
-              </label>
-              <textarea
-                value={emailTemplate}
-                onChange={(e) => setEmailTemplate(e.target.value)}
-                rows={6}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="请输入邮件内容..."
-              />
-            </div>
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setShowEmailDialog(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                取消
-              </button>
-              <button
-                onClick={handleSendBatchEmail}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                发送
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }
