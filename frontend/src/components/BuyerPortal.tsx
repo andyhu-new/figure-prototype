@@ -59,6 +59,7 @@ export function BuyerPortal() {
   const [startDate, setStartDate] = useState<Date | null>(() => new Date('2024-01-01'));
   const [endDate, setEndDate] = useState<Date | null>(() => new Date('2024-01-15'));
   const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
+  const [selectedSeller, setSelectedSeller] = useState<string>('');
 
   const handleDateChange = (date: string | null, setDate: (date: Date | null) => void) => {
     console.log('handleDateChange input:', date);
@@ -89,7 +90,8 @@ export function BuyerPortal() {
       await fetchInvoices('buyer', buyerId, {
         status: selectedStatus,
         startDate: startDate ? format(startDate, 'yyyy-MM-dd') : undefined,
-        endDate: endDate ? format(endDate, 'yyyy-MM-dd') : undefined
+        endDate: endDate ? format(endDate, 'yyyy-MM-dd') : undefined,
+        sellerId: selectedSeller || undefined
       });
     }
   };
@@ -121,7 +123,7 @@ export function BuyerPortal() {
     });
     fetchFilteredInvoices();
     fetchInvoiceHeaders(buyerId);
-  }, [buyerId, selectedStatus, startDate, endDate, fetchInvoices, fetchInvoiceHeaders]);
+  }, [buyerId, selectedStatus, selectedSeller, startDate, endDate, fetchInvoices, fetchInvoiceHeaders]);
 
   // Initial data fetch
   useEffect(() => {
@@ -160,6 +162,25 @@ export function BuyerPortal() {
       {activeTab === 'invoice' && (
         <div className="mt-4 space-y-4">
           <div className="flex gap-4 items-center">
+            <div className="flex-1">
+              <label className="block text-sm font-medium mb-1">卖家</label>
+              <Select
+                value={selectedSeller || 'all'}
+                onValueChange={(value) => setSelectedSeller(value === 'all' ? '' : value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="选择卖家" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部</SelectItem>
+                  {Array.from(new Set(invoices.map(inv => inv.seller_id))).map((sellerId) => (
+                    <SelectItem key={sellerId} value={sellerId}>
+                      {invoices.find(inv => inv.seller_id === sellerId)?.seller_name || sellerId}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex-1">
               <label className="block text-sm font-medium mb-1">发票状态</label>
               <Select
@@ -212,21 +233,27 @@ export function BuyerPortal() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">发票状态</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">支付状态</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">消费时间</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">备注</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">选择</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {invoices.map((invoice) => (
+                    {[...invoices].sort((a, b) => {
+                      if (a.invoice_status === 'requested' && b.invoice_status !== 'requested') return -1;
+                      if (a.invoice_status !== 'requested' && b.invoice_status === 'requested') return 1;
+                      return 0;
+                    }).map((invoice) => (
                       <tr key={invoice.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">{invoice.bill_number}</td>
+                        <td className="px-6 py-4 whitespace-nowrap flex items-center">
+                          {invoice.invoice_status === 'requested' && (
+                            <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2" />
+                          )}
+                          {invoice.bill_number}</td>
                         <td className="px-6 py-4 whitespace-nowrap">{invoice.seller_name}</td>
                         <td className="px-6 py-4 whitespace-nowrap">{invoice.amount}</td>
                         <td className="px-6 py-4 whitespace-nowrap">{invoice.invoice_status}</td>
                         <td className="px-6 py-4 whitespace-nowrap">{invoice.payment_status}</td>
                         <td className="px-6 py-4 whitespace-nowrap">{format(new Date(invoice.consumption_time), "yyyy-MM-dd")}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{invoice.remarks}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {invoice.uploaded_invoice_url && (
                             <a
@@ -281,7 +308,7 @@ export function BuyerPortal() {
 
       {/* Confirmation Dialog */}
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent>
+        <DialogContent className="bg-white">
           <DialogHeader>
             <DialogTitle>确认发票申请</DialogTitle>
           </DialogHeader>

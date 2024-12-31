@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "invoice-portal"
+version = "0.1.0"
+description = "Invoice Portal Backend"
+authors = ["Devin"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.6"
+uvicorn = "^0.34.0"
+python-multipart = "^0.0.20"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

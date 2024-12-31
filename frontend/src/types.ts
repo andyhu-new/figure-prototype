@@ -1,3 +1,5 @@
+export type PaymentStatus = 'outstanding' | 'past_due';
+
 export interface Message {
   id: string;
   sender_id: string;
@@ -16,6 +18,8 @@ export interface Invoice {
   consumption_time: string;
   bill_number: string;
   seller_name: string;
+  product_name?: string;
+  product_id?: string;
   uploaded_invoice_url?: string;
   seller_reply?: string;
   remarks?: string;

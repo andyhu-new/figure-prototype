@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useInvoiceContext } from '../context/InvoiceContext';
-import type { Invoice } from '../types';
+import type { Invoice, PaymentStatus } from '../types';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 export function SellerPortal() {
   const { invoices, fetchInvoices } = useInvoiceContext();
@@ -9,9 +11,17 @@ export function SellerPortal() {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [replyMessage, setReplyMessage] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState<string>('all');
 
   const fetchSellerInvoices = async () => {
-    await fetchInvoices('seller', 'seller1', { buyerId: searchBuyerId });
+    await fetchInvoices('seller', 'seller1', {
+      buyerId: searchBuyerId,
+      startDate,
+      endDate,
+      status: paymentStatus !== 'all' ? [paymentStatus] : undefined,
+    });
   };
 
   const handleSearch = () => {
@@ -37,12 +47,34 @@ export function SellerPortal() {
       });
 
       if (response.ok) {
-        fetchInvoices('seller', 'seller1', { buyerId: searchBuyerId });
+        await fetchSellerInvoices();
         setShowUploadDialog(false);
         setSelectedInvoice(null);
       }
     } catch (error) {
       console.error('Error uploading invoice:', error);
+    }
+  };
+
+  const handleDownloadExcel = async (invoice: Invoice) => {
+    try {
+      const response = await fetch(`/api/invoices/${invoice.id}/download-excel`, {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `invoice-info-${invoice.id}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+    } catch (error) {
+      console.error('Error downloading Excel:', error);
     }
   };
 
@@ -63,7 +95,7 @@ export function SellerPortal() {
       });
 
       if (response.ok) {
-        fetchInvoices('seller', 'seller1', { buyerId: searchBuyerId });
+        await fetchSellerInvoices();
         setShowUploadDialog(false);
         setSelectedInvoice(null);
         setReplyMessage('');
@@ -75,7 +107,7 @@ export function SellerPortal() {
 
   useEffect(() => {
     fetchSellerInvoices();
-  }, [fetchInvoices]);
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -86,21 +118,68 @@ export function SellerPortal() {
           <label htmlFor="buyerId" className="block text-sm font-medium text-gray-700 mb-2">
             按买家ID搜索
           </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              id="buyerId"
-              value={searchBuyerId}
-              onChange={(e) => setSearchBuyerId(e.target.value)}
-              className="flex-1 rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="输入买家ID"
-            />
-            <button
-              onClick={handleSearch}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              搜索
-            </button>
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                id="buyerId"
+                value={searchBuyerId}
+                onChange={(e) => setSearchBuyerId(e.target.value)}
+                className="flex-1 rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="输入买家ID"
+              />
+              <button
+                onClick={handleSearch}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                搜索
+              </button>
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
+                  开始日期
+                </label>
+                <Input
+                  type="date"
+                  id="startDate"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full bg-white"
+                />
+              </div>
+              <div className="flex-1">
+                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
+                  结束日期
+                </label>
+                <Input
+                  type="date"
+                  id="endDate"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full bg-white"
+                />
+              </div>
+              <div className="flex-1">
+                <label htmlFor="paymentStatus" className="block text-sm font-medium text-gray-700 mb-1">
+                  支付状态
+                </label>
+                <Select
+                  value={paymentStatus}
+                  onValueChange={setPaymentStatus}
+                >
+                  <SelectTrigger className="w-full bg-white">
+                    <SelectValue placeholder="选择支付状态" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">全部</SelectItem>
+                    <SelectItem value="outstanding">未支付</SelectItem>
+                    <SelectItem value="past_due">已逾期</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -111,11 +190,15 @@ export function SellerPortal() {
               <tr>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">买家ID</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">买家名称</th>
+                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">产品名称</th>
+                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">产品ID</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">金额</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">消费时间</th>
-                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">发票状态</th>
+                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">支付状态</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">发票下载</th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">用户开票信息</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -123,11 +206,14 @@ export function SellerPortal() {
                 <tr key={invoice.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.buyer_id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.buyer_id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.product_name || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.product_id || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">¥{invoice.amount}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {format(new Date(invoice.consumption_time), 'yyyy-MM-dd HH:mm')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.invoice_status}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.payment_status}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {invoice.uploaded_invoice_url && (
                       <a
@@ -146,6 +232,14 @@ export function SellerPortal() {
                       className="text-indigo-600 hover:text-indigo-900"
                     >
                       上传或回复
+                    </button>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <button
+                      onClick={() => handleDownloadExcel(invoice)}
+                      className="text-indigo-600 hover:text-indigo-900"
+                    >
+                      下载Excel
                     </button>
                   </td>
                 </tr>
