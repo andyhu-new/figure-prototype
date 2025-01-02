@@ -1,12 +1,18 @@
 [build]
-  command = "pnpm run build"
+  command = "pnpm install && pnpm run build"
   publish = "dist"
+  base = "/"
 
 [build.environment]
   NODE_VERSION = "20"
+  CI = "true"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  force = true
+
+[[headers]]
+  for = "/*"
+    [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
