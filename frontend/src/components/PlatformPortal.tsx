@@ -215,11 +215,8 @@ export function PlatformPortal() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.buyer_id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.seller_name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">¥{invoice.amount_with_tax}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {invoice.invoice_status === '已申请' ? '待开具' :
-                     invoice.invoice_status === '已上传' ? '已开具' :
-                     '已拒绝'}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">¥{invoice.tax_amount}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.invoice_status}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {invoice.payment_status === '未付款' ? '未支付' : '已逾期'}
                   </td>
