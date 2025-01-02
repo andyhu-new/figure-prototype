@@ -58,43 +58,53 @@ function setToLocalStorage<T>(key: string, data: T): void {
 }
 
 export function InvoiceProvider({ children }: { children: ReactNode }) {
-  const [buyerId, setBuyerId] = useState<string>('buyer1');
+  const [buyerId, setBuyerId] = useState<string>('买家1');
   const [invoices, setInvoices] = useState<Invoice[]>(() => {
     // Generate 30 mock invoices
     const mockInvoices: Invoice[] = Array.from({ length: 30 }, (_, i) => {
       const date = new Date('2024-01-01');
       date.setDate(date.getDate() + Math.floor(Math.random() * 31)); // Random date in January 2024
       
-      const statuses: Array<Invoice['invoice_status']> = ['requested', 'uploaded', 'rejected'];
-      const paymentStatuses: Array<Invoice['payment_status']> = ['Outstanding', 'Past Due'];
+      const statuses: Array<Invoice['invoice_status']> = ['已申请', '已上传', '已拒绝'];
+      const _paymentStatuses: Array<Invoice['payment_status']> = ['未付款', '逾期'];
+      const productOptions = [
+        { name: '产品一', id: 'CP001' },
+        { name: '产品二', id: 'CP002' },
+        { name: '产品三', id: 'CP003' },
+        { name: '产品四', id: 'CP004' },
+        { name: '产品五', id: 'CP005' }
+      ];
       const sellers = [
-        { id: 'seller1', name: '卖家一' },
-        { id: 'seller2', name: '卖家二' },
-        { id: 'seller3', name: '卖家三' }
+        { id: '卖家1', name: '卖家一' },
+        { id: '卖家2', name: '卖家二' },
+        { id: '卖家3', name: '卖家三' }
       ];
       const seller = sellers[Math.floor(Math.random() * sellers.length)];
+      const selectedProduct = productOptions[Math.floor(Math.random() * productOptions.length)];
       
       return {
         id: String(i + 1),
-        buyer_id: `buyer${Math.floor(Math.random() * 5) + 1}`,
+        buyer_id: `买家${Math.floor(Math.random() * 5) + 1}`,
         seller_id: seller.id,
         amount_with_tax: Math.floor(Math.random() * 10000) / 100,
         tax_amount: Math.floor(Math.random() * 1000) / 100,
         invoice_status: statuses[Math.floor(Math.random() * statuses.length)],
-        payment_status: Math.random() > 0.5 ? 'Outstanding' : 'Past Due',
+        payment_status: Math.random() > 0.5 ? '未付款' : '逾期',
         consumption_time: date.toISOString().split('T')[0],
-        bill_number: `BILL${String(i + 1).padStart(3, '0')}`,
+        bill_number: `账单${String(i + 1).padStart(3, '0')}`,
         seller_name: seller.name,
         created_at: date.toISOString().split('T')[0],
         updated_at: date.toISOString().split('T')[0],
         messages: [],
-        uploaded_invoice_url: Math.random() > 0.7 ? `https://example.com/invoice${i + 1}.pdf` : undefined,
+        uploaded_invoice_url: Math.random() > 0.7 ? `https://发票系统.com/发票${i + 1}.pdf` : undefined,
         seller_reply: '',
         remarks: '',
         seller_contact: {
           contact_person: `${seller.name}的联系人`,
           contact_info: `电话: ${Math.floor(Math.random() * 900000000 + 100000000)}`
-        }
+        },
+        product_name: selectedProduct.name,
+        product_id: selectedProduct.id
       };
     });
     return mockInvoices;
@@ -102,11 +112,11 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
   const [invoiceHeaders, setInvoiceHeaders] = useState<InvoiceHeader[]>([
     {
       id: '1',
-      header_text: '测试公司',
+      header_text: '发票测试公司',
       header_type: '企业',
       invoice_type: '增值税普通发票',
       mailing_address: '北京市朝阳区xxx街道',
-      mailing_email: 'test@example.com',
+      mailing_email: '联系人@发票系统.com',
       created_at: '2024-01-01',
       updated_at: '2024-01-01'
     }
@@ -148,36 +158,46 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
         const date = new Date('2024-01-01');
         date.setDate(date.getDate() + Math.floor(Math.random() * 31));
         
-        const statuses: Array<Invoice['invoice_status']> = ['requested', 'uploaded', 'rejected'];
-        const paymentStatuses: Array<Invoice['payment_status']> = ['Outstanding', 'Past Due'];
+        const statuses: Array<Invoice['invoice_status']> = ['已申请', '已上传', '已拒绝'];
+        const _paymentStatuses: Array<Invoice['payment_status']> = ['未付款', '逾期'];
+        const productOptions = [
+          { name: '产品一', id: 'CP001' },
+          { name: '产品二', id: 'CP002' },
+          { name: '产品三', id: 'CP003' },
+          { name: '产品四', id: 'CP004' },
+          { name: '产品五', id: 'CP005' }
+        ];
         const sellers = [
-          { id: 'seller1', name: '卖家一' },
-          { id: 'seller2', name: '卖家二' },
-          { id: 'seller3', name: '卖家三' }
+          { id: '卖家1', name: '卖家一' },
+          { id: '卖家2', name: '卖家二' },
+          { id: '卖家3', name: '卖家三' }
         ];
         const seller = sellers[Math.floor(Math.random() * sellers.length)];
+        const selectedProduct = productOptions[Math.floor(Math.random() * productOptions.length)];
         
         return {
           id: String(i + 1),
-          buyer_id: id,
+          buyer_id: id.replace('buyer', '买家'),
           seller_id: seller.id,
           amount_with_tax: Math.floor(Math.random() * 10000) / 100,
           tax_amount: Math.floor(Math.random() * 1000) / 100,
           invoice_status: statuses[Math.floor(Math.random() * statuses.length)],
-          payment_status: Math.random() > 0.5 ? 'Outstanding' : 'Past Due',
+          payment_status: Math.random() > 0.5 ? '未付款' : '逾期',
           consumption_time: date.toISOString().split('T')[0],
-          bill_number: `BILL${String(i + 1).padStart(3, '0')}`,
+          bill_number: `账单${String(i + 1).padStart(3, '0')}`,
           seller_name: seller.name,
           created_at: date.toISOString().split('T')[0],
           updated_at: date.toISOString().split('T')[0],
           messages: [],
-          uploaded_invoice_url: Math.random() > 0.7 ? `https://example.com/invoice${i + 1}.pdf` : undefined,
+          uploaded_invoice_url: Math.random() > 0.7 ? `https://发票系统.com/发票${i + 1}.pdf` : undefined,
           seller_reply: '',
           remarks: '',
           seller_contact: {
             contact_person: `${seller.name}的联系人`,
             contact_info: `电话: ${Math.floor(Math.random() * 900000000 + 100000000)}`
-          }
+          },
+          product_name: selectedProduct.name,
+          product_id: selectedProduct.id
         };
       });
 

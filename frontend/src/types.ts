@@ -14,13 +14,11 @@ export interface Invoice {
   seller_id: string;
   amount_with_tax: number;  // Changed from amount
   tax_amount: number;       // New field
-  invoice_status: 'requested' | 'uploaded' | 'rejected';
-  payment_status: 'Outstanding' | 'Past Due';  // Updated casing
+  invoice_status: '已申请' | '已上传' | '已拒绝';
+  payment_status: '未付款' | '逾期';  // Updated casing
   consumption_time: string;
   bill_number: string;
   seller_name: string;
-  product_name?: string;
-  product_id?: string;
   uploaded_invoice_url?: string;
   seller_reply?: string;
   remarks?: string;
@@ -31,6 +29,8 @@ export interface Invoice {
     contact_person: string;
     contact_info: string;
   };
+  product_name?: string;  // Product information
+  product_id?: string;
 }
 
 export interface InvoiceHeader {

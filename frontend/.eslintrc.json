@@ -1,0 +1,65 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "plugins": ["@typescript-eslint", "react"],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "react/react-in-jsx-scope": "off",
+    "no-undef": "off",
+    "@typescript-eslint/no-explicit-any": "off"
+  },
+  "globals": {
+    "window": true,
+    "document": true,
+    "localStorage": true,
+    "FormData": true,
+    "FileReader": true,
+    "Blob": true,
+    "navigator": true,
+    "fetch": true,
+    "console": true,
+    "setTimeout": true,
+    "clearTimeout": true,
+    "requestAnimationFrame": true,
+    "cancelAnimationFrame": true,
+    "HTMLElement": true,
+    "Element": true,
+    "Node": true,
+    "ShadowRoot": true,
+    "Event": true,
+    "CSS": true,
+    "IntersectionObserver": true,
+    "ResizeObserver": true,
+    "DocumentFragment": true,
+    "crypto": true
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "ignorePatterns": [
+    "dist/**/*",
+    "build/**/*",
+    "*.config.js",
+    "*.config.ts",
+    "node_modules/**/*",
+    ".eslintrc.js",
+    "vite.config.ts"
+  ]
+}
