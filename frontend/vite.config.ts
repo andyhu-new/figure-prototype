@@ -6,6 +6,14 @@ import path from 'path'
 export default defineConfig({
   base: '',
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+      },
+    },
+    copyPublicDir: true,
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
