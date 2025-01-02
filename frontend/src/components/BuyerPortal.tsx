@@ -193,9 +193,9 @@ export function BuyerPortal() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">全部</SelectItem>
-                  <SelectItem value="requested">已申请</SelectItem>
-                  <SelectItem value="uploaded">已上传</SelectItem>
-                  <SelectItem value="rejected">已拒绝</SelectItem>
+                  <SelectItem value="已申请">已申请</SelectItem>
+                  <SelectItem value="已上传">已上传</SelectItem>
+                  <SelectItem value="已拒绝">已拒绝</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -242,8 +242,8 @@ export function BuyerPortal() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {[...invoices].sort((a, b) => {
-                      if (a.invoice_status === 'requested' && b.invoice_status !== 'requested') return -1;
-                      if (a.invoice_status !== 'requested' && b.invoice_status === 'requested') return 1;
+                      if (a.invoice_status === '已申请' && b.invoice_status !== '已申请') return -1;
+                      if (a.invoice_status !== '已申请' && b.invoice_status === '已申请') return 1;
                       return 0;
                     }).map((invoice) => (
                       <tr key={invoice.id}>

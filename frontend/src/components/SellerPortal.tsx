@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useInvoiceContext } from '../context/InvoiceContext';
-import type { Invoice, PaymentStatus } from '../types';
+import type { Invoice } from '../types';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
@@ -174,8 +174,8 @@ export function SellerPortal() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">全部</SelectItem>
-                    <SelectItem value="outstanding">未支付</SelectItem>
-                    <SelectItem value="past_due">已逾期</SelectItem>
+                    <SelectItem value="未付款">未付款</SelectItem>
+                    <SelectItem value="逾期">逾期</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -206,7 +206,7 @@ export function SellerPortal() {
               {invoices.map((invoice) => (
                 <tr key={invoice.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {invoice.invoice_status === 'requested' && (
+                    {invoice.invoice_status === '已申请' && (
                       <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2" />
                     )}
                     {invoice.buyer_id}
@@ -215,6 +215,7 @@ export function SellerPortal() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.product_name || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.product_id || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">¥{invoice.amount_with_tax}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">¥{invoice.tax_amount}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {format(new Date(invoice.consumption_time), 'yyyy-MM-dd HH:mm')}
                   </td>

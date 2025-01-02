@@ -10,7 +10,7 @@ export function PlatformPortal() {
   const [searchBuyerId, setSearchBuyerId] = useState('');
   const [searchSellerId, setSearchSellerId] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
-  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [_showEmailDialog, setShowEmailDialog] = useState(false);
   const [emailTemplate, setEmailTemplate] = useState('');
 
   const fetchPlatformInvoices = async () => {
@@ -53,7 +53,7 @@ export function PlatformPortal() {
     setSelectedInvoice(invoice);
   };
 
-  const handleSendBatchEmail = async () => {
+  const _handleSendBatchEmail = async () => {
     if (selectedInvoices.length === 0) return;
 
     try {
@@ -118,7 +118,7 @@ export function PlatformPortal() {
               发票状态
             </label>
             <div className="space-x-4">
-              {['requested', 'uploaded', 'rejected'].map(status => (
+              {['已申请', '已上传', '已拒绝'].map(status => (
                 <label key={status} className="inline-flex items-center">
                   <input
                     type="checkbox"
@@ -127,9 +127,7 @@ export function PlatformPortal() {
                     className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                   />
                   <span className="ml-2 text-sm text-gray-700">
-                    {status === 'requested' ? '待开具' :
-                     status === 'uploaded' ? '已开具' :
-                     '已拒绝'}
+                    {status}
                   </span>
                 </label>
               ))}
@@ -163,9 +161,8 @@ export function PlatformPortal() {
                   '卖家名称': inv.seller_name,
                   '含税金额': inv.amount_with_tax,
                   '税额': inv.tax_amount,
-                  '发票状态': inv.invoice_status === 'requested' ? '待开具' : 
-                            inv.invoice_status === 'uploaded' ? '已开具' : '已拒绝',
-                  '支付状态': inv.payment_status === 'Outstanding' ? '未支付' : '已逾期',
+                  '发票状态': inv.invoice_status,
+                  '支付状态': inv.payment_status,
                   '消费时间': format(new Date(inv.consumption_time), 'yyyy-MM-dd HH:mm')
                 }));
               const csvContent = "data:text/csv;charset=utf-8," + 
@@ -219,12 +216,12 @@ export function PlatformPortal() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.seller_name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">¥{invoice.amount_with_tax}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {invoice.invoice_status === 'requested' ? '待开具' :
-                     invoice.invoice_status === 'uploaded' ? '已开具' :
+                    {invoice.invoice_status === '已申请' ? '待开具' :
+                     invoice.invoice_status === '已上传' ? '已开具' :
                      '已拒绝'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {invoice.payment_status === 'Outstanding' ? '未支付' : '已逾期'}
+                    {invoice.payment_status === '未付款' ? '未支付' : '已逾期'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {format(new Date(invoice.consumption_time), 'yyyy-MM-dd HH:mm')}
